@@ -291,6 +291,7 @@ public class MainForm extends JFrame{
                 }
             }
         });
+        System.out.println("Hello");
     }
 
 }
