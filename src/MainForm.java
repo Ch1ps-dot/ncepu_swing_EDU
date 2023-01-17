@@ -1,19 +1,14 @@
-import com.mysql.cj.x.protobuf.MysqlxDatatypes;
-
-import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import javax.imageio.*;
+import java.util.Vector;
 
 public class MainForm extends JFrame{
     private JPanel root;
@@ -25,9 +20,9 @@ public class MainForm extends JFrame{
     private JPanel queryPanel;
     private JPanel objType;
     private JPanel deletePanel;
-    private JButton updateButton;
+    private JButton generateButton;
     private JButton setButton;
-    private JPanel updatePanel;
+    private JPanel generatePanel;
     private JPanel insertPanel;
     private JTextField subField;
     private JComboBox typeBox;
@@ -36,15 +31,19 @@ public class MainForm extends JFrame{
     private JButton clearBtn;
     private JPanel contentAP;
     private JPanel ansAP;
-    private JTextField textField1;
-    private JTextField textField3;
-    private JButton update_add_Button;
     private JComboBox cname_qP;
     private JComboBox type_qP;
     private JButton queryBtn_qP;
     private JComboBox chapter_qP;
     private JPanel contentPanel_qP;
     private JButton helpBtn_qP;
+    private JTextArea gP_contentArea;
+    private JComboBox uP_subjectCombo;
+    private JButton gP_generateBtn;
+    private JButton gP_outputBtn;
+    private JButton gP_questionBtn;
+    private JButton 添加题目Button;
+    private JButton gP_subBtn;
 
     private JTextField contentField;
 
@@ -54,24 +53,35 @@ public class MainForm extends JFrame{
 
     private  ResultSet rs = null;
 
+    JTextArea contentArea_qP;
+
+    Vector<String> subject;
+
+    String selected_subject;
+
     public MainForm(Connection conn){
-        add(root);
-        //连接数据库
         this.conn = conn;
+        init();
+        query_control();
+        insert_control();
+    }
+
+    private void init(){
+        add(root);
 
         //侧边栏消除按钮边框
         queryButton.setFocusPainted(false);
         queryButton.setBorderPainted(false);
         insertButton.setBorderPainted(false);
         deleteButton.setBorderPainted(false);
-        updateButton.setBorderPainted(false);
+        generateButton.setBorderPainted(false);
         setButton.setBorderPainted(false);
 
         //标题栏图标和框架设置
         setTitle("试题管理");
         ImageIcon logo = new ImageIcon("img/logo.png");
         setIconImage(logo.getImage());
-        setSize(555,480);
+        setSize(545,480);
         setLocationRelativeTo(null);
         //setResizable(false);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -88,7 +98,7 @@ public class MainForm extends JFrame{
         contentPanel.add(queryPanel,"query");
         contentPanel.add(insertPanel,"insert");
         contentPanel.add(deletePanel,"delete");
-        contentPanel.add(updatePanel,"update");
+        contentPanel.add(generatePanel,"update");
         contentPanel.add(setPanel,"set");
         ActionListener cardMainEvent = new ActionListener() {
             @Override
@@ -99,7 +109,7 @@ public class MainForm extends JFrame{
                     cardLayout.show(contentPanel,"insert");
                 } else if (e.getSource()==deleteButton) {
                     cardLayout.show(contentPanel,"delete");
-                } else if (e.getSource()==updateButton) {
+                } else if (e.getSource()== generateButton) {
                     cardLayout.show(contentPanel,"update");
                 } else if (e.getSource()==setButton) {
                     cardLayout.show(contentPanel,"set");
@@ -110,26 +120,8 @@ public class MainForm extends JFrame{
         queryButton.addActionListener(cardMainEvent);
         insertButton.addActionListener(cardMainEvent);
         deleteButton.addActionListener(cardMainEvent);
-        updateButton.addActionListener(cardMainEvent);
+        generateButton.addActionListener(cardMainEvent);
         setButton.addActionListener(cardMainEvent);
-
-        //insertPanel
-        JTextArea contentArea = new JTextArea(10,30);
-        JTextArea ansArea = new JTextArea(5,30);
-        ansArea.setLineWrap(true);
-        contentArea.setLineWrap(true);
-        JScrollPane sp = new JScrollPane(contentArea);
-        JScrollPane ap = new JScrollPane(ansArea);
-        ansAP.add(ap);
-        contentAP.add(sp);
-        typeBox.addItem("简答");
-        typeBox.addItem("选择");
-        typeBox.addItem("判断");
-        typeBox.addItem("填空");
-        typeBox.setSelectedIndex(-1);
-
-        //queryPanel
-        helpBtn_qP.setBorderPainted(false);
         try {
             //cname_qP.removeAllItems();
             String sql_Cname = "select distinct Cname from course";
@@ -138,23 +130,27 @@ public class MainForm extends JFrame{
             while (rs.next()){
                 String cname = rs.getString("Cname");
                 cname_qP.addItem(cname);
+                subject.add(cname);
             }
             cname_qP.setSelectedIndex(-1);
         }
         catch (Exception err){
             System.out.println(err.getMessage());
         }
-
-        JTextArea contentArea_qP = new JTextArea(15,35);
+    }
+    private void query_control(){
+        //queryPanel
+        helpBtn_qP.setBorderPainted(false);
+        this.contentArea_qP = new JTextArea(15,35);
         contentArea_qP.setFont( new Font("宋体",Font.BOLD,18));
         contentArea_qP.setLineWrap(true);
         contentArea_qP.setEditable(false);
         JScrollPane contentArea_sP = new JScrollPane(contentArea_qP);
+        gP_questionBtn.setBorderPainted(false);
 
-        //事件监听
         contentPanel_qP.add(contentArea_sP);
         queryBtn_qP.addActionListener(new ActionListener() {
-            //添加按钮
+            //查询按钮
             @Override
             public void actionPerformed(ActionEvent e) {
                 contentArea_qP.setText("");
@@ -193,23 +189,21 @@ public class MainForm extends JFrame{
                     System.out.println(type);
                     System.out.println(state);
                     pstmt.setString(1,cname);
-                    switch (state){
-                        case 1:
-                            pstmt.setString(1,cname);
-                            break;
-                        case 2:
+                    switch (state) {
+                        case 1 -> pstmt.setString(1, cname);
+                        case 2 -> {
                             pstmt.setInt(2, chapter);
-                            pstmt.setString(1,cname);
-                            break;
-                        case 3:
+                            pstmt.setString(1, cname);
+                        }
+                        case 3 -> {
                             pstmt.setString(2, type);
-                            pstmt.setString(1,cname);
-                            break;
-                        case 4:
+                            pstmt.setString(1, cname);
+                        }
+                        case 4 -> {
                             pstmt.setString(2, type);
-                            pstmt.setInt(3,chapter);
-                            pstmt.setString(1,cname);
-                            break;
+                            pstmt.setInt(3, chapter);
+                            pstmt.setString(1, cname);
+                        }
                     }
 
                     //显示查询结果
@@ -279,6 +273,22 @@ public class MainForm extends JFrame{
                 }
             }
         });
+    }
+    private void insert_control(){
+        //insertPanel
+        JTextArea contentArea = new JTextArea(10,30);
+        JTextArea ansArea = new JTextArea(5,30);
+        ansArea.setLineWrap(true);
+        contentArea.setLineWrap(true);
+        JScrollPane sp = new JScrollPane(contentArea);
+        JScrollPane ap = new JScrollPane(ansArea);
+        ansAP.add(ap);
+        contentAP.add(sp);
+        typeBox.addItem("简答");
+        typeBox.addItem("选择");
+        typeBox.addItem("判断");
+        typeBox.addItem("填空");
+        typeBox.setSelectedIndex(-1);
         addBtn_iP.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -291,7 +301,29 @@ public class MainForm extends JFrame{
                 }
             }
         });
-        System.out.println("Hello");
     }
+    private void generate_control(){
+        //generateAction
+        gP_subBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PaperForm pf = new PaperForm(subject);
+                pf.setVisible(true);
 
+                getContentPane().add(pf);
+            }
+        });
+        gP_generateBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+        gP_outputBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+    }
 }

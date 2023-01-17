@@ -33,7 +33,7 @@
             <properties>
               <background color="-11974327"/>
               <enabled value="true"/>
-              <icon value="plus.png"/>
+              <icon value="upload (2).png"/>
               <text value=""/>
               <toolTipText value="添加"/>
             </properties>
@@ -44,7 +44,7 @@
             </constraints>
             <properties>
               <background color="-11974327"/>
-              <icon value="delete.png"/>
+              <icon value="delete-fill.png"/>
               <text value=""/>
               <toolTipText value="删除"/>
             </properties>
@@ -54,15 +54,15 @@
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
-          <component id="92381" class="javax.swing.JButton" binding="updateButton">
+          <component id="92381" class="javax.swing.JButton" binding="generateButton">
             <constraints>
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <background color="-11974327"/>
-              <icon value="upload (1).png"/>
+              <icon value="download.png"/>
               <text value=""/>
-              <toolTipText value="修改"/>
+              <toolTipText value="试卷生成"/>
             </properties>
           </component>
           <component id="915f6" class="javax.swing.JButton" binding="setButton">
@@ -71,7 +71,7 @@
             </constraints>
             <properties>
               <background color="-11974327"/>
-              <icon value="cog.png"/>
+              <icon value="cog (1).png"/>
               <text value=""/>
               <toolTipText value="设置"/>
             </properties>
@@ -234,8 +234,7 @@
             <border type="none"/>
             <children/>
           </grid>
-          <grid id="9ad30" binding="updatePanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-            <margin top="0" left="0" bottom="0" right="0"/>
+          <grid id="9ad30" binding="generatePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
               <card name="Card4"/>
             </constraints>
@@ -244,73 +243,52 @@
             </properties>
             <border type="none"/>
             <children>
-              <grid id="39199" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <background color="-11250604"/>
-                </properties>
+              <component id="9c016" class="javax.swing.JTextArea" binding="gP_contentArea">
+                <constraints border-constraint="Center"/>
+                <properties/>
+              </component>
+              <grid id="792d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="North"/>
+                <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="2b3ec" class="javax.swing.JLabel">
+                  <component id="5cbb3" class="javax.swing.JButton" binding="gP_subBtn">
                     <constraints/>
                     <properties>
-                      <text value="课程名"/>
+                      <font size="14" style="1"/>
+                      <text value="选择科目"/>
                     </properties>
                   </component>
-                  <component id="86c9f" class="javax.swing.JTextField" binding="textField1" default-binding="true">
-                    <constraints/>
-                    <properties/>
-                  </component>
-                  <component id="201be" class="javax.swing.JLabel">
+                  <component id="78407" class="javax.swing.JButton" binding="添加题目Button" default-binding="true">
                     <constraints/>
                     <properties>
+                      <font size="14" style="1"/>
+                      <text value="添加题目"/>
+                    </properties>
+                  </component>
+                  <component id="d1e0" class="javax.swing.JButton" binding="gP_generateBtn">
+                    <constraints/>
+                    <properties>
+                      <font size="14" style="1"/>
+                      <text value="生成试卷"/>
+                    </properties>
+                  </component>
+                  <component id="77f7" class="javax.swing.JButton" binding="gP_outputBtn">
+                    <constraints/>
+                    <properties>
+                      <font size="14" style="1"/>
+                      <text value="导出"/>
+                    </properties>
+                  </component>
+                  <component id="86be" class="javax.swing.JButton" binding="gP_questionBtn">
+                    <constraints/>
+                    <properties>
+                      <icon value="question-circle.png"/>
                       <text value=""/>
                     </properties>
                   </component>
-                  <component id="18dae" class="javax.swing.JLabel">
-                    <constraints/>
-                    <properties>
-                      <text value="章节数"/>
-                    </properties>
-                  </component>
-                  <component id="e9585" class="javax.swing.JTextField" binding="textField3" default-binding="true">
-                    <constraints/>
-                    <properties/>
-                  </component>
                 </children>
               </grid>
-              <grid id="93604" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <background color="-11250604"/>
-                </properties>
-                <clientProperties>
-                  <html.disable class="java.lang.Boolean" value="false"/>
-                </clientProperties>
-                <border type="none"/>
-                <children>
-                  <component id="a2ab4" class="javax.swing.JButton" binding="update_add_Button">
-                    <constraints/>
-                    <properties>
-                      <text value="提交"/>
-                    </properties>
-                  </component>
-                </children>
-              </grid>
-              <vspacer id="5318">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-                </constraints>
-              </vspacer>
-              <vspacer id="33005">
-                <constraints>
-                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-                </constraints>
-              </vspacer>
             </children>
           </grid>
           <grid id="9491b" binding="insertPanel" layout-manager="GridLayoutManager" row-count="6" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
