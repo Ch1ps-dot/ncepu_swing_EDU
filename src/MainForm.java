@@ -55,7 +55,7 @@ public class MainForm extends JFrame{
 
     JTextArea contentArea_qP;
 
-    Vector<String> subject;
+    public Vector<String> subject = new Vector<>();
 
     String selected_subject;
 
@@ -129,10 +129,9 @@ public class MainForm extends JFrame{
             rs = pstmt.executeQuery();
             while (rs.next()){
                 String cname = rs.getString("Cname");
-                cname_qP.addItem(cname);
                 subject.add(cname);
+                System.out.println("Yes");
             }
-            cname_qP.setSelectedIndex(-1);
         }
         catch (Exception err){
             System.out.println(err.getMessage());
@@ -147,6 +146,16 @@ public class MainForm extends JFrame{
         contentArea_qP.setEditable(false);
         JScrollPane contentArea_sP = new JScrollPane(contentArea_qP);
         gP_questionBtn.setBorderPainted(false);
+        for(String s:subject){
+            cname_qP.addItem(s);
+        }
+        cname_qP.setSelectedIndex(-1);
+        queryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
 
         contentPanel_qP.add(contentArea_sP);
         queryBtn_qP.addActionListener(new ActionListener() {
@@ -168,6 +177,7 @@ public class MainForm extends JFrame{
                     if((String)chapter_qP.getSelectedItem()!="全部"){
                         sql = sql + sql_ch;
                         chapter = Integer.parseInt((String)chapter_qP.getSelectedItem());
+                        System.out.println(chapter);
                         state = 2;
                     }
 
@@ -183,11 +193,6 @@ public class MainForm extends JFrame{
 
 
                     pstmt = conn.prepareStatement(sql);
-                    System.out.println(sql);
-                    System.out.println(cname);
-                    System.out.println(chapter);
-                    System.out.println(type);
-                    System.out.println(state);
                     pstmt.setString(1,cname);
                     switch (state) {
                         case 1 -> pstmt.setString(1, cname);
@@ -308,9 +313,7 @@ public class MainForm extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 PaperForm pf = new PaperForm(subject);
-                pf.setVisible(true);
-
-                getContentPane().add(pf);
+                selected_subject = pf.getSubject();
             }
         });
         gP_generateBtn.addActionListener(new ActionListener() {

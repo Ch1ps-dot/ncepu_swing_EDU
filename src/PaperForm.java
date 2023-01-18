@@ -43,11 +43,11 @@ public class PaperForm extends JFrame{
         return obj;
     }
 
-    public static void main(String[] args) {
-        FlatDarkLaf.setup();
-        PaperForm pf = new PaperForm();
-        pf.setLocationRelativeTo(null);
-        pf.setVisible(true);
-        pf.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-    }
+//    public static void main(String[] args) {
+//        FlatDarkLaf.setup();
+//        PaperForm pf = new PaperForm();
+//        pf.setLocationRelativeTo(null);
+//        pf.setVisible(true);
+//        pf.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+//    }
 }
