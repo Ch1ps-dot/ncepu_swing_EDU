@@ -5,6 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -319,6 +322,7 @@ public class MainForm extends JFrame{
         gP_subBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                question_number.clear();
                 PaperForm pf = new PaperForm(subject,getFrame());
             }
         });
@@ -326,54 +330,58 @@ public class MainForm extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 Random random = new Random();
-
+                gP_contentArea.setText("");
+                gP_contentArea.append("---"+selected_subject+"---\n");
                 random.setSeed(10000L);
                 for (String s:question_number.keySet()){
                     try{
                         String content = "[" + s+ "]\n";
                         gP_contentArea.append(content);
-                        String sql = "select count(*) " +
+                        String sql = "select data " +
                                 "from question,course " +
                                 "where question.Cno = course.Cno and course.Cname = ? and question.qtype = ?";
                         pstmt = conn.prepareStatement(sql);
                         pstmt.setString(1,selected_subject);
                         pstmt.setString(2,s);
                         rs = pstmt.executeQuery();
-                        rs.next();
-                        int total=rs.getInt(1);
-                        //System.out.println(total);
-
-
-                        String sql_2 = "select data " +
-                                "from question,course " +
-                                "where question.Cno = course.Cno and course.Cname = ? and question.qtype = ?";
-                        pstmt = conn.prepareStatement(sql_2);
-                        pstmt.setString(1,selected_subject);
-                        pstmt.setString(2,s);
-                        rs = pstmt.executeQuery();
 
                         Vector<Integer> numbers = new Vector<Integer>();
-                        for(int i = 0; i < Integer.parseInt(question_number.get(s))&&i < total+1;){
+                        Vector<String> data = new Vector<>();
+                        int total = 0;
+                        while (rs.next()){
+                            data.add(rs.getString(1));
+                            total++;
+                        }
+                        for(int i = 0; i < Integer.parseInt(question_number.get(s))&&i < total;){
                             int num = random.nextInt(total+1);
-                            if(!numbers.contains(num)&&num>0){
+                            if(!numbers.contains(num)){
                                 numbers.add(num);
-                                //System.out.println("random:"+num);
+                                System.out.println("random:"+num);
                                 i++;
                             }
                         }
                         int i = 0;
+                        int j = 0;
                         Collections.sort(numbers);
-                        while (rs.next()&&i<numbers.size()) {
-                            if(rs.getRow()==numbers.get(i)){
-                                content = "(" +(i+1)+") " + rs.getString(1)+"\n";
+                        for (String d:data) {
+                            if(j>=Integer.parseInt(question_number.get(s))||j >= total) break;
+                            if(i==numbers.get(j)){
+                                content = "(" +(j+1)+") " + d+"\n";
                                 gP_contentArea.append(content);
-                                i++;
+                                sql = "update question set " +
+                                        "cut = cut + 1 " +
+                                        "where data = ?";
+                                pstmt = conn.prepareStatement(sql);
+                                pstmt.setString(1,d);
+                                pstmt.executeUpdate();
+                                j++;
                             }
+                            i++;
                         }
 
                     }
                     catch (Exception err){
-                        System.out.println(err.getMessage());
+                        System.out.println(err.getLocalizedMessage());
                     }
                 }
             }
@@ -381,6 +389,17 @@ public class MainForm extends JFrame{
         gP_outputBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String text = gP_contentArea.getText();
+                try{
+                    File f=new File("试卷.txt");
+                    FileOutputStream fos1=new FileOutputStream(f);
+                    OutputStreamWriter dos1=new OutputStreamWriter(fos1);
+                    dos1.write(text);
+                    dos1.close();
+                }
+                catch (Exception err){
+                    System.out.println(err.getMessage());
+                }
 
             }
         });
