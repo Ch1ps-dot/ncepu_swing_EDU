@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,8 +8,7 @@ import java.awt.event.ItemListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.util.*;
 
 public class MainForm extends JFrame{
     private JPanel root;
@@ -42,7 +42,7 @@ public class MainForm extends JFrame{
     private JButton gP_generateBtn;
     private JButton gP_outputBtn;
     private JButton gP_questionBtn;
-    private JButton 添加题目Button;
+    private JButton gP_addBtn;
     private JButton gP_subBtn;
 
     private JTextField contentField;
@@ -57,13 +57,18 @@ public class MainForm extends JFrame{
 
     public Vector<String> subject = new Vector<>();
 
-    String selected_subject;
+    private Vector<String> gP_questions = new Vector();
+
+    private Map<String,String> question_number = new HashMap<>();
+
+    String selected_subject = null;
 
     public MainForm(Connection conn){
         this.conn = conn;
         init();
         query_control();
         insert_control();
+        generate_control();
     }
 
     private void init(){
@@ -130,8 +135,8 @@ public class MainForm extends JFrame{
             while (rs.next()){
                 String cname = rs.getString("Cname");
                 subject.add(cname);
-                System.out.println("Yes");
             }
+
         }
         catch (Exception err){
             System.out.println(err.getMessage());
@@ -150,12 +155,6 @@ public class MainForm extends JFrame{
             cname_qP.addItem(s);
         }
         cname_qP.setSelectedIndex(-1);
-        queryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-            }
-        });
 
         contentPanel_qP.add(contentArea_sP);
         queryBtn_qP.addActionListener(new ActionListener() {
@@ -205,8 +204,8 @@ public class MainForm extends JFrame{
                             pstmt.setString(1, cname);
                         }
                         case 4 -> {
-                            pstmt.setString(2, type);
-                            pstmt.setInt(3, chapter);
+                            pstmt.setString(3, type);
+                            pstmt.setInt(2, chapter);
                             pstmt.setString(1, cname);
                         }
                     }
@@ -308,18 +307,75 @@ public class MainForm extends JFrame{
         });
     }
     private void generate_control(){
+        //设置文本区
+        gP_contentArea = new JTextArea();
+        gP_contentArea.setFont( new Font("宋体",Font.BOLD,10));
+        gP_contentArea.setLineWrap(true);
+        gP_contentArea.setEditable(false);
+        JScrollPane gP_contentArea_sP = new JScrollPane(gP_contentArea);
+        generatePanel.add(BorderLayout.CENTER,gP_contentArea_sP);
+
         //generateAction
         gP_subBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                PaperForm pf = new PaperForm(subject);
-                selected_subject = pf.getSubject();
+                PaperForm pf = new PaperForm(subject,getFrame());
             }
         });
         gP_generateBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                Random random = new Random();
 
+                random.setSeed(10000L);
+                for (String s:question_number.keySet()){
+                    try{
+                        String content = "[" + s+ "]\n";
+                        gP_contentArea.append(content);
+                        String sql = "select count(*) " +
+                                "from question,course " +
+                                "where question.Cno = course.Cno and course.Cname = ? and question.qtype = ?";
+                        pstmt = conn.prepareStatement(sql);
+                        pstmt.setString(1,selected_subject);
+                        pstmt.setString(2,s);
+                        rs = pstmt.executeQuery();
+                        rs.next();
+                        int total=rs.getInt(1);
+                        //System.out.println(total);
+
+
+                        String sql_2 = "select data " +
+                                "from question,course " +
+                                "where question.Cno = course.Cno and course.Cname = ? and question.qtype = ?";
+                        pstmt = conn.prepareStatement(sql_2);
+                        pstmt.setString(1,selected_subject);
+                        pstmt.setString(2,s);
+                        rs = pstmt.executeQuery();
+
+                        Vector<Integer> numbers = new Vector<Integer>();
+                        for(int i = 0; i < Integer.parseInt(question_number.get(s))&&i < total+1;){
+                            int num = random.nextInt(total+1);
+                            if(!numbers.contains(num)&&num>0){
+                                numbers.add(num);
+                                //System.out.println("random:"+num);
+                                i++;
+                            }
+                        }
+                        int i = 0;
+                        Collections.sort(numbers);
+                        while (rs.next()&&i<numbers.size()) {
+                            if(rs.getRow()==numbers.get(i)){
+                                content = "(" +(i+1)+") " + rs.getString(1)+"\n";
+                                gP_contentArea.append(content);
+                                i++;
+                            }
+                        }
+
+                    }
+                    catch (Exception err){
+                        System.out.println(err.getMessage());
+                    }
+                }
             }
         });
         gP_outputBtn.addActionListener(new ActionListener() {
@@ -328,5 +384,32 @@ public class MainForm extends JFrame{
 
             }
         });
+        gP_addBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    String sql = "select distinct 题型 " +
+                            "from course_qtype_use " +
+                            "where 课程名 = ?";
+                    pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1,selected_subject);
+                    rs = pstmt.executeQuery();
+                    gP_questions.clear();
+                    while (rs.next()){
+                        gP_questions.add(rs.getString(1));
+                        System.out.println(rs.getString(1));
+                    }
+                }
+                catch (Exception err){
+                    System.out.println(err.getMessage());
+                }
+                System.out.println(selected_subject);
+                new add_question_Dialoge(question_number,selected_subject,gP_questions);
+            }
+        });
+    }
+
+    private MainForm getFrame(){
+        return this;
     }
 }

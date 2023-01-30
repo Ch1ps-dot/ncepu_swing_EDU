@@ -243,10 +243,6 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="9c016" class="javax.swing.JTextArea" binding="gP_contentArea">
-                <constraints border-constraint="Center"/>
-                <properties/>
-              </component>
               <grid id="792d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                 <constraints border-constraint="North"/>
                 <properties/>
@@ -259,7 +255,7 @@
                       <text value="选择科目"/>
                     </properties>
                   </component>
-                  <component id="78407" class="javax.swing.JButton" binding="添加题目Button" default-binding="true">
+                  <component id="78407" class="javax.swing.JButton" binding="gP_addBtn">
                     <constraints/>
                     <properties>
                       <font size="14" style="1"/>

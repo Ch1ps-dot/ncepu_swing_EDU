@@ -14,12 +14,15 @@ public class PaperForm extends JFrame{
     private Vector<String> subject;
 
     public String obj;
+
+    private MainForm mf;
     PaperForm(){
         init();
     }
-    PaperForm(Vector<String> subject){
+    PaperForm(Vector<String> subject, MainForm mf){
         init();
         this.subject = subject;
+        this.mf = mf;
         for(int i = 0; i < subject.size(); i++){
             subject_Combo.addItem(subject.get(i));
         }
@@ -28,6 +31,9 @@ public class PaperForm extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 obj = (String) subject_Combo.getSelectedItem();
+                mf.selected_subject = obj;
+                onOut();
+
             }
         });
     }
@@ -35,6 +41,7 @@ public class PaperForm extends JFrame{
         add(root);
         setTitle("选择科目");
         setSize(200,100);
+        setLocationRelativeTo(null);
         setVisible(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
@@ -43,11 +50,9 @@ public class PaperForm extends JFrame{
         return obj;
     }
 
-//    public static void main(String[] args) {
-//        FlatDarkLaf.setup();
-//        PaperForm pf = new PaperForm();
-//        pf.setLocationRelativeTo(null);
-//        pf.setVisible(true);
-//        pf.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-//    }
+    private void onOut(){
+        dispose();
+    }
+
+
 }
