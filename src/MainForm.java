@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.*;
 
 public class MainForm extends JFrame{
@@ -22,12 +22,11 @@ public class MainForm extends JFrame{
     private JButton deleteButton;
     private JPanel queryPanel;
     private JPanel objType;
-    private JPanel deletePanel;
+    private JPanel coursePanel;
     private JButton generateButton;
     private JButton setButton;
     private JPanel generatePanel;
     private JPanel insertPanel;
-    private JTextField subField;
     private JComboBox typeBox;
     private JTextField chapterField;
     private JButton addBtn_iP;
@@ -47,6 +46,10 @@ public class MainForm extends JFrame{
     private JButton gP_questionBtn;
     private JButton gP_addBtn;
     private JButton gP_subBtn;
+    private JComboBox ip_questionCom;
+    private JTextField cP_textField;
+    private JButton cP_addbutton;
+    private JButton cP_clearButton;
 
     private JTextField contentField;
 
@@ -72,6 +75,7 @@ public class MainForm extends JFrame{
         query_control();
         insert_control();
         generate_control();
+        course_control();
     }
 
     private void init(){
@@ -105,7 +109,7 @@ public class MainForm extends JFrame{
         contentPanel.add(maskPanel,"mask");
         contentPanel.add(queryPanel,"query");
         contentPanel.add(insertPanel,"insert");
-        contentPanel.add(deletePanel,"delete");
+        contentPanel.add(coursePanel,"delete");
         contentPanel.add(generatePanel,"update");
         contentPanel.add(setPanel,"set");
         ActionListener cardMainEvent = new ActionListener() {
@@ -284,28 +288,75 @@ public class MainForm extends JFrame{
     private void insert_control(){
         //insertPanel
         JTextArea contentArea = new JTextArea(10,30);
-        JTextArea ansArea = new JTextArea(5,30);
-        ansArea.setLineWrap(true);
         contentArea.setLineWrap(true);
         JScrollPane sp = new JScrollPane(contentArea);
-        JScrollPane ap = new JScrollPane(ansArea);
-        ansAP.add(ap);
+        ip_questionCom.removeAll();
         contentAP.add(sp);
         typeBox.addItem("简答");
         typeBox.addItem("选择");
         typeBox.addItem("判断");
         typeBox.addItem("填空");
         typeBox.setSelectedIndex(-1);
+
+        try {
+            for(String s:subject){
+                ip_questionCom.addItem(s);
+            }
+            ip_questionCom.setSelectedIndex(-1);
+        }
+        catch (Exception err){
+            System.out.println("添加错误");
+        }
         addBtn_iP.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String sql = "test";
                 try {
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    if(ip_questionCom.getSelectedItem()!=null&&typeBox.getSelectedItem()!=null&&chapterField.getText()!=""&&contentArea.getText()!=""){
+                        String sql = "select Cno " +
+                                "from course " +
+                                "where Cname = ?";
+                        pstmt = conn.prepareStatement(sql);;
+                        pstmt.setString(1,(String) ip_questionCom.getSelectedItem());
+                        rs = pstmt.executeQuery();
+                        rs.next();
+                        String cno = rs.getString(1);
+
+                        sql = "select Qno,count(*) " +
+                                "from question ";
+                        pstmt = conn.prepareStatement(sql);;
+                        rs = pstmt.executeQuery();
+                        rs.next();
+                        int total = rs.getInt(2);
+                        System.out.println(total);
+
+                        sql = "insert into question " +
+                                "(Cno,Qno,qtype,time,chapter,data,cut) " +
+                                "values(?,?,?,?,?,?,?) ";
+                        pstmt = conn.prepareStatement(sql);
+                        pstmt.setString(1,cno);
+                        pstmt.setInt(2,total+1);
+                        pstmt.setString(3,(String) typeBox.getSelectedItem());
+                        Calendar calendar = Calendar.getInstance();
+                        java.util.Date currentTime = calendar.getTime();
+                        pstmt.setTimestamp(4,new Timestamp(currentTime.getTime()));
+                        pstmt.setInt(5,Integer.parseInt(chapterField.getText()));
+                        pstmt.setString(6,contentArea.getText());
+                        pstmt.setInt(7,0);
+                        pstmt.execute();
+                    }
                 }
                 catch (Exception err){
-                    System.out.println("添加错误");
+                    System.out.println(err.getMessage());
                 }
+            }
+        });
+        clearBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ip_questionCom.setSelectedIndex(-1);
+                typeBox.setSelectedIndex(-1);
+                chapterField.setText("");
+                contentArea.setText("");
             }
         });
     }
@@ -424,6 +475,46 @@ public class MainForm extends JFrame{
                 }
                 System.out.println(selected_subject);
                 new add_question_Dialoge(question_number,selected_subject,gP_questions);
+            }
+        });
+    }
+    private void course_control(){
+        cP_addbutton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    if(cP_textField.getText()!=""){
+                        String content = cP_textField.getText();
+                        cname_qP.addItem(content);
+                        cname_qP.setSelectedIndex(-1);
+                        ip_questionCom.addItem(content);
+                        ip_questionCom.setSelectedIndex(-1);
+                        String sql = "select Cno,count(*) " +
+                                "from course ";
+                        pstmt = conn.prepareStatement(sql);
+                        rs = pstmt.executeQuery();
+                        rs.next();
+                        int total = rs.getInt(2);
+                        System.out.println(total);
+                        sql = "insert into course " +
+                                "(Cno,Cname) " +
+                                "values (?,?)";
+                        pstmt = conn.prepareStatement(sql);
+                        pstmt.setString(1,"00"+(total+1));
+                        pstmt.setString(2,content);
+                        pstmt.execute();
+                    }
+                }
+                catch (Exception err){
+                    System.out.println(err.getMessage());
+                }
+
+            }
+        });
+        cP_clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cP_textField.setText("");
             }
         });
     }
