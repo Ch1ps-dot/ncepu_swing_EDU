@@ -44,7 +44,7 @@
             </constraints>
             <properties>
               <background color="-11974327"/>
-              <icon value="delete-fill.png"/>
+              <icon value="file-plus (1).png"/>
               <text value=""/>
               <toolTipText value="添加课程"/>
             </properties>

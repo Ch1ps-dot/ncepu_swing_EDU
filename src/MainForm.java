@@ -96,7 +96,7 @@ public class MainForm extends JFrame{
         setSize(545,480);
         setLocationRelativeTo(null);
         //setResizable(false);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //内容部分用卡片布局实现不同面板切换
         CardLayout cardLayout = new CardLayout();
@@ -404,7 +404,7 @@ public class MainForm extends JFrame{
                             total++;
                         }
                         for(int i = 0; i < Integer.parseInt(question_number.get(s))&&i < total;){
-                            int num = random.nextInt(total+1);
+                            int num = random.nextInt(total);
                             if(!numbers.contains(num)){
                                 numbers.add(num);
                                 System.out.println("random:"+num);
